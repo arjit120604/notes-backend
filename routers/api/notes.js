@@ -17,13 +17,11 @@ notes.connectToDatabase();
 // });
 
 //morgan to log CRUD requests to a local file
-// Create a write stream (in append mode) for the logs
 const accessLogStream = fs.createWriteStream(
   path.join(__filename, "../../../logger.log"),
   { flags: "a" }
 );
 
-// Use morgan middleware with the write stream for logging
 router.use(morgan("combined", { stream: accessLogStream }));
 
 //using morgan to log CRUD reqs to mongoDB
@@ -41,7 +39,7 @@ router.use(morgan("combined", { stream: accessLogStream }));
 //   morgan("combined", { stream: { write: (message) => logger.info(message) } })
 // );
 
-// Get all notes
+// GET all notes
 router.get("/", async (req, res) => {
   const allNotes = await notes.displayAllNotes();
   res.json(allNotes);
@@ -63,7 +61,7 @@ router.get("/", async (req, res) => {
 //   }
 // });
 
-// Get note via id
+// GET note via id
 router.get("/:id", async (req, res) => {
   const found = await notes.displayNoteById(req.params.id);
   if (found) {
@@ -73,7 +71,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Get note via tag
+// GET note via tag
 router.get("/tag/:tag", async (req, res) => {
   const found = await notes.displayNotesByTag(req.params.tag);
 
@@ -84,7 +82,7 @@ router.get("/tag/:tag", async (req, res) => {
   }
 });
 
-// Add new note
+// POST, single add
 router.post("/", async (req, res) => {
   const newNote = {
     id: uuid.v4(),
@@ -106,7 +104,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Delete note by ID
+// DELETE note via ID
 router.delete("/:id", async (req, res) => {
   const deletedNote = await notes.deleteNoteById(req.params.id);
 
@@ -119,7 +117,7 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-// Delete note by title
+// DELETE note by title
 router.delete("/title/:title", async (req, res) => {
   const deletedNote = await notes.deleteNoteByTitle(req.params.title);
 
@@ -132,6 +130,7 @@ router.delete("/title/:title", async (req, res) => {
   }
 });
 
+//POST via id
 router.put("/:id", async (req, res) => {
   const noteId = req.params.id;
   const updatedNoteData = req.body;
