@@ -50,20 +50,20 @@ const displayAllNotes = async () => {
 const displayNoteById = async (noteId) => {
   try {
     // Check if noteId is a valid ObjectId
-    if (!mongoose.Types.ObjectId.isValid(noteId)) {
-      // Treat it as a search query instead
-      const notesBySearch = await Note.find({
-        $or: [{ title: noteId }, { content: noteId }],
-      });
+    // if (!mongoose.Types.ObjectId.isValid(noteId)) {
+    //   // Treat it as a search query instead
+    //   const notesBySearch = await Note.find({
+    //     $or: [{ title: noteId }, { content: noteId }],
+    //   });
 
-      if (notesBySearch.length === 0) {
-        console.log(`No notes found with title or content: ${noteId}`);
-        return null;
-      }
+    //   if (notesBySearch.length === 0) {
+    //     console.log(`No notes found with title or content: ${noteId}`);
+    //     return null;
+    //   }
 
-      console.log(`Notes by Title or Content (${noteId}):`, notesBySearch);
-      return notesBySearch;
-    }
+    //   console.log(`Notes by Title or Content (${noteId}):`, notesBySearch);
+    //   return notesBySearch;
+    // }
 
     // If noteId is a valid ObjectId, proceed with finding by ID
     const note = await Note.findById(noteId);
