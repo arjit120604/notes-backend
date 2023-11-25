@@ -8,6 +8,8 @@ require("winston-mongodb");
 const fs = require("fs");
 const path = require("path");
 
+require("dotenv").config();
+
 notes.connectToDatabase();
 
 //middleware to log
@@ -16,28 +18,28 @@ notes.connectToDatabase();
 //   next();
 // });
 
-//morgan to log CRUD requests to a local file
-const accessLogStream = fs.createWriteStream(
-  path.join(__filename, "../../../logger.log"),
-  { flags: "a" }
-);
+// morgan to log CRUD requests to a local file(local host)
+// const accessLogStream = fs.createWriteStream(
+//   path.join(__filename, "../../../logger.log"),
+//   { flags: "a" }
+// );
 
-router.use(morgan("combined", { stream: accessLogStream }));
+// router.use(morgan("combined", { stream: accessLogStream }));
 
 //using morgan to log CRUD reqs to mongoDB
-// const logger = winston.createLogger({
-//   transports: [
-//     new winston.transports.MongoDB({
-//       db: "mongodb+srv://arjit:arjit1206@cluster0.iret1e1.mongodb.net/notes",
-//       options: { useNewUrlParser: true, useUnifiedTopology: true },
-//       collection: "logs",
-//     }),
-//   ],
-// });
+const logger = winston.createLogger({
+  transports: [
+    new winston.transports.MongoDB({
+      db: process.env.MONGODB_URL,
+      options: { useNewUrlParser: true, useUnifiedTopology: true },
+      collection: "logs",
+    }),
+  ],
+});
 
-// router.use(
-//   morgan("combined", { stream: { write: (message) => logger.info(message) } })
-// );
+router.use(
+  morgan("combined", { stream: { write: (message) => logger.info(message) } })
+);
 
 // GET all notes
 router.get("/", async (req, res) => {
