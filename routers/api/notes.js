@@ -93,7 +93,7 @@ router.post("/", async (req, res) => {
     tag: req.body.tag,
   };
 
-  if (!newNote.title || !newNote.content || !newNote.tag) {
+  if (!newNote.title || !newNote.content) {
     return res.status(400).json({ msg: `Please send title, content, and tag` });
   } else {
     try {
