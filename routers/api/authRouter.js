@@ -47,6 +47,7 @@ router.post("/login", async (req, res) => {
   const user = await UserModel.findOne({
     username: username,
   });
+  console.log(user);
 
   if (!user) {
     return res

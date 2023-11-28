@@ -51,14 +51,11 @@ router.get("/", async (req, res) => {
     const user = await User.findOne({ username: username });
 
     const allNotes = await notes.displayAllNotes();
-    res.json(allNotes);
-    return res.json({ status: "ok", quote: user.quote });
+    res.json({ status: "ok", quote: user.quote, notes: allNotes });
   } catch (error) {
     console.log(error);
-    res.json({ status: "error", error: "invalid token" });
+    res.status(401).json({ status: "error", error: "invalid token" });
   }
-  // const allNotes = await notes.displayAllNotes();
-  // res.json(allNotes);
 });
 
 // router.post("/log", async (req, res) => {
