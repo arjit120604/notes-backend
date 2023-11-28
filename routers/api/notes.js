@@ -101,10 +101,12 @@ router.get("/tag/:tag", async (req, res) => {
 // POST, single add
 router.post("/", async (req, res) => {
   const token = req.headers["x-access-token"];
+
   try {
     const decoded = jwt.verify(token, "secret123");
     const username = decoded.username;
     const user = await UserModel.findOne({ username: username });
+
     if (user) {
       const newNote = {
         title: req.body.title,
@@ -117,7 +119,7 @@ router.post("/", async (req, res) => {
           .status(400)
           .json({ msg: `Please send title, content, and tag` });
       }
-    } else {
+
       try {
         const addedNote = await notes.insertOneNote(newNote);
         res.json(addedNote);
@@ -125,10 +127,13 @@ router.post("/", async (req, res) => {
         console.error("Error adding note:", error);
         res.status(500).json({ msg: "Internal Server Error" });
       }
+    } else {
+      // Handle the case where the user doesn't exist
+      res.status(401).json({ msg: "User not authenticated" });
     }
   } catch (error) {
     console.log(error);
-    res.json({ status: "error", error: "invalid token" });
+    res.status(401).json({ status: "error", error: "Invalid token" });
   }
 });
 
