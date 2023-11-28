@@ -43,8 +43,22 @@ router.use(
 
 // GET all notes
 router.get("/", async (req, res) => {
-  const allNotes = await notes.displayAllNotes();
-  res.json(allNotes);
+  const token = req.headers["x-access-token"];
+
+  try {
+    const decoded = jwt.verify(token, "secret");
+    const username = decoded.username;
+    const user = await User.findOne({ username: username });
+
+    const allNotes = await notes.displayAllNotes();
+    res.json(allNotes);
+    return res.json({ status: "ok", quote: user.quote });
+  } catch (error) {
+    console.log(error);
+    res.json({ status: "error", error: "invalid token" });
+  }
+  // const allNotes = await notes.displayAllNotes();
+  // res.json(allNotes);
 });
 
 // router.post("/log", async (req, res) => {
@@ -86,36 +100,75 @@ router.get("/tag/:tag", async (req, res) => {
 
 // POST, single add
 router.post("/", async (req, res) => {
-  const newNote = {
-    id: uuid.v4(),
-    title: req.body.title,
-    content: req.body.content,
-    tag: req.body.tag,
-  };
+  const token = req.headers["x-access-token"];
+  try {
+    const decoded = jwt.verify(token, "secret123");
+    const username = decoded.username;
+    const user = await User.findOne({ username: username });
+    if (user) {
+      const newNote = {
+        title: req.body.title,
+        content: req.body.content,
+        tag: req.body.tag,
+      };
 
-  if (!newNote.title || !newNote.content) {
-    return res.status(400).json({ msg: `Please send title, content, and tag` });
-  } else {
-    try {
-      const addedNote = await notes.insertOneNote(newNote);
-      res.json(addedNote);
-    } catch (error) {
-      console.error("Error adding note:", error);
-      res.status(500).json({ msg: "Internal Server Error" });
+      if (!newNote.title || !newNote.content) {
+        return res
+          .status(400)
+          .json({ msg: `Please send title, content, and tag` });
+      }
+    } else {
+      try {
+        const addedNote = await notes.insertOneNote(newNote);
+        res.json(addedNote);
+      } catch (error) {
+        console.error("Error adding note:", error);
+        res.status(500).json({ msg: "Internal Server Error" });
+      }
     }
+  } catch (error) {
+    console.log(error);
+    res.json({ status: "error", error: "invalid token" });
   }
 });
 
 // DELETE note via ID
-router.delete("/:id", async (req, res) => {
-  const deletedNote = await notes.deleteNoteById(req.params.id);
+// router.delete("/:id", async (req, res) => {
+//   const deletedNote = await notes.deleteNoteById(req.params.id);
 
-  if (deletedNote) {
-    res.json({ msg: "Note deleted successfully", deletedNote });
-  } else {
-    res.status(400).json({
-      msg: `Note ${req.params.id} not found or could not be deleted`,
-    });
+//   if (deletedNote) {
+//     res.json({ msg: "Note deleted successfully", deletedNote });
+//   } else {
+//     res.status(400).json({
+//       msg: `Note ${req.params.id} not found or could not be deleted`,
+//     });
+//   }
+// });
+
+router.delete("/:id", async (req, res) => {
+  const token = req.headers["x-access-token"];
+
+  try {
+    const decoded = jwt.verify(token, "secret123");
+    const username = decoded.username;
+    const user = await User.findOne({ username: username });
+
+    if (user) {
+      const deletedNote = await notes.deleteNoteById(req.params.id);
+
+      if (deletedNote) {
+        res.json({ msg: "Note deleted successfully", deletedNote });
+      } else {
+        res.status(400).json({
+          msg: `Note ${req.params.id} not found or could not be deleted`,
+        });
+      }
+    } else {
+      res.status(400).json({ msg: "User not found" });
+    }
+  } catch (error) {
+    console.log(error);
+    res.json({ status: "error", error: "invalid token" });
   }
 });
 
@@ -133,20 +186,52 @@ router.delete("/title/:title", async (req, res) => {
 });
 
 //POST via id
+// router.put("/:id", async (req, res) => {
+//   const noteId = req.params.id;
+//   const updatedNoteData = req.body;
+
+//   try {
+//     const updatedNote = await notes.updateNote(noteId, updatedNoteData);
+//     if (updatedNote) {
+//       res.json(updatedNote);
+//     } else {
+//       res.status(404).json({ msg: `Note with ID ${noteId} not found` });
+//     }
+//   } catch (error) {
+//     console.error("Error updating note:", error);
+//     res.status(500).json({ msg: "Internal Server Error" });
+//   }
+// });
+
+// PUT note via ID
 router.put("/:id", async (req, res) => {
+  const token = req.headers["x-access-token"];
   const noteId = req.params.id;
   const updatedNoteData = req.body;
 
   try {
-    const updatedNote = await notes.updateNote(noteId, updatedNoteData);
-    if (updatedNote) {
-      res.json(updatedNote);
+    const decoded = jwt.verify(token, "secret123");
+    const username = decoded.username;
+    const user = await User.findOne({ username: username });
+
+    if (user) {
+      try {
+        const updatedNote = await notes.updateNote(noteId, updatedNoteData);
+        if (updatedNote) {
+          res.json(updatedNote);
+        } else {
+          res.status(404).json({ msg: `Note with ID ${noteId} not found` });
+        }
+      } catch (error) {
+        console.error("Error updating note:", error);
+        res.status(500).json({ msg: "Internal Server Error" });
+      }
     } else {
-      res.status(404).json({ msg: `Note with ID ${noteId} not found` });
+      res.status(400).json({ msg: "User not found" });
     }
   } catch (error) {
-    console.error("Error updating note:", error);
-    res.status(500).json({ msg: "Internal Server Error" });
+    console.log(error);
+    res.json({ status: "error", error: "invalid token" });
   }
 });
 
