@@ -44,11 +44,12 @@ router.use(
 // GET all notes
 router.get("/", async (req, res) => {
   const token = req.headers["x-access-token"];
+  console.log(token);
 
   try {
     const decoded = jwt.verify(token, "secret");
-    const username = decoded.username;
-    const user = await User.findOne({ username: username });
+    const usernam = decoded.username;
+    const user = await User.findOne({ username: usernam });
 
     const allNotes = await notes.displayAllNotes();
     res.json({ status: "ok", quote: user.quote, notes: allNotes });
