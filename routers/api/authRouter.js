@@ -4,13 +4,7 @@ const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
 
 const router = express.Router();
-
-const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-});
-
-const UserModel = mongoose.model("users", userSchema);
+const UserModel = require("../../models/User");
 
 router.post("/register", async (req, res) => {
   const { username, password } = req.body;
