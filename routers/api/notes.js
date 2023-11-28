@@ -104,7 +104,7 @@ router.post("/", async (req, res) => {
   try {
     const decoded = jwt.verify(token, "secret123");
     const username = decoded.username;
-    const user = await User.findOne({ username: username });
+    const user = await UserModel.findOne({ username: username });
     if (user) {
       const newNote = {
         title: req.body.title,
@@ -151,7 +151,7 @@ router.delete("/:id", async (req, res) => {
   try {
     const decoded = jwt.verify(token, "secret123");
     const username = decoded.username;
-    const user = await User.findOne({ username: username });
+    const user = await UserModel.findOne({ username: username });
 
     if (user) {
       const deletedNote = await notes.deleteNoteById(req.params.id);
@@ -212,7 +212,7 @@ router.put("/:id", async (req, res) => {
   try {
     const decoded = jwt.verify(token, "secret123");
     const username = decoded.username;
-    const user = await User.findOne({ username: username });
+    const user = await UserModel.findOne({ username: username });
 
     if (user) {
       try {
