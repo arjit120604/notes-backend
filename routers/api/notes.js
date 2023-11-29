@@ -9,6 +9,7 @@ const fs = require("fs");
 const path = require("path");
 const jwt = require("jsonwebtoken");
 const UserModel = require("../../models/User");
+const jwt_decode = require("jwt-decode");
 
 require("dotenv").config();
 
@@ -101,35 +102,50 @@ router.get("/tag/:tag", async (req, res) => {
 // POST, single add
 router.post("/", async (req, res) => {
   const token = req.headers["x-access-token"];
+  console.log(token);
 
   try {
-    const decoded = jwt.verify(token, "secret123");
-    const username = decoded.username;
-    const user = await UserModel.findOne({ username: username });
+    if (!token) {
+      return res
+        .status(401)
+        .json({ status: "error", error: "Token not provided" });
+    }
 
-    if (user) {
-      const newNote = {
-        title: req.body.title,
-        content: req.body.content,
-        tag: req.body.tag,
-      };
-
-      if (!newNote.title || !newNote.content) {
-        return res
-          .status(400)
-          .json({ msg: `Please send title, content, and tag` });
-      }
-
+    const parseJwt = (token) => {
       try {
-        const addedNote = await notes.insertOneNote(newNote);
-        res.json(addedNote);
-      } catch (error) {
-        console.error("Error adding note:", error);
-        res.status(500).json({ msg: "Internal Server Error" });
+        return JSON.parse(atob(token.split(".")[1]));
+      } catch (e) {
+        return null;
       }
-    } else {
-      // Handle the case where the user doesn't exist
-      res.status(401).json({ msg: "User not authenticated" });
+    };
+
+    const usernam = parseJwt(token).username;
+    console.log(`decoded`, usernam);
+    const user = await UserModel.findOne({ username: usernam });
+
+    if (!user) {
+      return res.status(401).json({ status: "error", error: "User not found" });
+    }
+
+    const newNote = {
+      title: req.body.title,
+      content: req.body.content,
+      tag: req.body.tag,
+    };
+
+    if (!newNote.title || !newNote.content) {
+      return res.status(400).json({
+        status: "error",
+        error: "Please send title, content, and tag",
+      });
+    }
+
+    try {
+      const addedNote = await notes.insertOneNote(newNote);
+      res.json({ status: "ok", note: addedNote });
+    } catch (error) {
+      console.error("Error adding note:", error);
+      res.status(500).json({ status: "error", error: "Internal Server Error" });
     }
   } catch (error) {
     console.log(error);
@@ -154,9 +170,17 @@ router.delete("/:id", async (req, res) => {
   const token = req.headers["x-access-token"];
 
   try {
-    const decoded = jwt.verify(token, "secret123");
-    const username = decoded.username;
-    const user = await UserModel.findOne({ username: username });
+    const parseJwt = (token) => {
+      try {
+        return JSON.parse(atob(token.split(".")[1]));
+      } catch (e) {
+        return null;
+      }
+    };
+
+    const usernam = parseJwt(token).username;
+    console.log(`decoded`, usernam);
+    const user = await UserModel.findOne({ username: usernam });
 
     if (user) {
       const deletedNote = await notes.deleteNoteById(req.params.id);
@@ -215,9 +239,17 @@ router.put("/:id", async (req, res) => {
   const updatedNoteData = req.body;
 
   try {
-    const decoded = jwt.verify(token, "secret123");
-    const username = decoded.username;
-    const user = await UserModel.findOne({ username: username });
+    const parseJwt = (token) => {
+      try {
+        return JSON.parse(atob(token.split(".")[1]));
+      } catch (e) {
+        return null;
+      }
+    };
+
+    const usernam = parseJwt(token).username;
+    console.log(`decoded`, usernam);
+    const user = await UserModel.findOne({ username: usernam });
 
     if (user) {
       try {
