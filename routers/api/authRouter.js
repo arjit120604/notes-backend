@@ -56,23 +56,10 @@ router.post("/login", async (req, res) => {
   }
   const token = jwt.sign(
     { id: user._id, username: username, password: password },
-    "secret"
+    "secret",
+    { expiresIn: 2700 }
   );
   res.json({ token, userID: user._id });
 });
 
 module.exports = router;
-
-module.exports.verifyToken = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (authHeader) {
-    jwt.verify(authHeader, "secret", (err) => {
-      if (err) {
-        return res.sendStatus(403);
-      }
-      next();
-    });
-  } else {
-    res.sendStatus(401);
-  }
-};

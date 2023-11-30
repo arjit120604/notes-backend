@@ -110,16 +110,18 @@ router.post("/", async (req, res) => {
         .status(401)
         .json({ status: "error", error: "Token not provided" });
     }
+    const decoded = jwt.verify(token, "secret");
+    const usernam = decoded.username;
 
-    const parseJwt = (token) => {
-      try {
-        return JSON.parse(atob(token.split(".")[1]));
-      } catch (e) {
-        return null;
-      }
-    };
+    // const parseJwt = (token) => {
+    //   try {
+    //     return JSON.parse(atob(token.split(".")[1]));
+    //   } catch (e) {
+    //     return null;
+    //   }
+    // };
 
-    const usernam = parseJwt(token).username;
+    // const usernam = parseJwt(token).username;
     console.log(`decoded`, usernam);
     const user = await UserModel.findOne({ username: usernam });
 
@@ -170,16 +172,19 @@ router.delete("/:id", async (req, res) => {
   const token = req.headers["x-access-token"];
 
   try {
-    const parseJwt = (token) => {
-      try {
-        return JSON.parse(atob(token.split(".")[1]));
-      } catch (e) {
-        return null;
-      }
-    };
+    // const parseJwt = (token) => {
+    //   try {
+    //     return JSON.parse(atob(token.split(".")[1]));
+    //   } catch (e) {
+    //     return null;
+    //   }
+    // };
 
-    const usernam = parseJwt(token).username;
-    console.log(`decoded`, usernam);
+    const decoded = jwt.verify(token, "secret");
+    const usernam = decoded.username;
+
+    // const usernam = parseJwt(token).username;
+    // console.log(`decoded`, usernam);
     const user = await UserModel.findOne({ username: usernam });
 
     if (user) {
