@@ -54,7 +54,7 @@ router.get("/", async (req, res) => {
     const usernam = decoded.username;
     const user = await UserModel.findOne({ username: usernam });
 
-    const allNotes = await notes.displayAllNotes();
+    const allNotes = await notes.displayAllNotes(usernam);
     res.json({ status: "ok", quote: user.quote, notes: allNotes });
   } catch (error) {
     console.log(error);
@@ -133,6 +133,7 @@ router.post("/", async (req, res) => {
       title: req.body.title,
       content: req.body.content,
       tag: req.body.tag,
+      user: usernam,
     };
 
     if (!newNote.title || !newNote.content) {
@@ -152,6 +153,39 @@ router.post("/", async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(401).json({ status: "error", error: "Invalid token" });
+  }
+});
+
+// add request for google
+router.post("/:id", async (req, res) => {
+  const id = req.params.id;
+
+  const user = await UserModel.findOne({ googleId: id });
+
+  if (!user) {
+    return res.status(401).json({ status: "error", error: "User not found" });
+  }
+
+  const newNote = {
+    title: req.body.title,
+    content: req.body.content,
+    tag: req.body.tag,
+    user: id,
+  };
+
+  if (!newNote.title || !newNote.content) {
+    return res.status(400).json({
+      status: "error",
+      error: "Please send title, content, and tag",
+    });
+  }
+
+  try {
+    const addedNote = await notes.insertOneNote(newNote);
+    res.json({ status: "ok", note: addedNote });
+  } catch (error) {
+    console.error("Error adding note:", error);
+    res.status(500).json({ status: "error", error: "Internal Server Error" });
   }
 });
 
@@ -186,6 +220,31 @@ router.delete("/:id", async (req, res) => {
     // const usernam = parseJwt(token).username;
     // console.log(`decoded`, usernam);
     const user = await UserModel.findOne({ username: usernam });
+
+    if (user) {
+      const deletedNote = await notes.deleteNoteById(req.params.id);
+
+      if (deletedNote) {
+        res.json({ msg: "Note deleted successfully", deletedNote });
+      } else {
+        res.status(400).json({
+          msg: `Note ${req.params.id} not found or could not be deleted`,
+        });
+      }
+    } else {
+      res.status(400).json({ msg: "User not found" });
+    }
+  } catch (error) {
+    console.log(error);
+    res.json({ status: "error", error: "invalid token" });
+  }
+});
+
+router.delete("/:googleId/:id", async (req, res) => {
+  try {
+    const usernam = req.params.googleId;
+
+    const user = await UserModel.findOne({ googleId: usernam });
 
     if (user) {
       const deletedNote = await notes.deleteNoteById(req.params.id);
@@ -244,17 +303,49 @@ router.put("/:id", async (req, res) => {
   const updatedNoteData = req.body;
 
   try {
-    const parseJwt = (token) => {
-      try {
-        return JSON.parse(atob(token.split(".")[1]));
-      } catch (e) {
-        return null;
-      }
-    };
+    // const parseJwt = (token) => {
+    //   try {
+    //     return JSON.parse(atob(token.split(".")[1]));
+    //   } catch (e) {
+    //     return null;
+    //   }
+    // };
 
-    const usernam = parseJwt(token).username;
-    console.log(`decoded`, usernam);
+    // const usernam = parseJwt(token).username;
+    // console.log(`decoded`, usernam);
+    const decoded = jwt.verify(token, "secret");
+    const usernam = decoded.username;
     const user = await UserModel.findOne({ username: usernam });
+
+    if (user) {
+      try {
+        const updatedNote = await notes.updateNote(noteId, updatedNoteData);
+        if (updatedNote) {
+          res.json(updatedNote);
+        } else {
+          res.status(404).json({ msg: `Note with ID ${noteId} not found` });
+        }
+      } catch (error) {
+        console.error("Error updating note:", error);
+        res.status(500).json({ msg: "Internal Server Error" });
+      }
+    } else {
+      res.status(400).json({ msg: "User not found" });
+    }
+  } catch (error) {
+    console.log(error);
+    res.json({ status: "error", error: "invalid token" });
+  }
+});
+
+//put for google
+router.put("/:googleId/:id", async (req, res) => {
+  const noteId = req.params.id;
+  const updatedNoteData = req.body;
+
+  try {
+    const usernam = req.params.googleId;
+    const user = await UserModel.findOne({ googleId: usernam });
 
     if (user) {
       try {

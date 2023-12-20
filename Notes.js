@@ -16,6 +16,7 @@ const noteSchema = new mongoose.Schema({
   title: String,
   content: String,
   tag: String,
+  user: String,
 });
 
 // const logSchema = new mongoose.Schema({
@@ -37,9 +38,9 @@ const insertNote = async (notes) => {
   }
 };
 
-const displayAllNotes = async () => {
+const displayAllNotes = async (username) => {
   try {
-    const allNotes = await Note.find({});
+    const allNotes = await Note.find({ user: username });
     console.log("All Notes:", allNotes);
     return allNotes;
   } catch (error) {
@@ -47,38 +48,48 @@ const displayAllNotes = async () => {
   }
 };
 
-const displayNoteById = async (noteId) => {
+const displayNoteById = async (id) => {
   try {
-    // Check if noteId is a valid ObjectId
-    // if (!mongoose.Types.ObjectId.isValid(noteId)) {
-    //   // Treat it as a search query instead
-    //   const notesBySearch = await Note.find({
-    //     $or: [{ title: noteId }, { content: noteId }],
-    //   });
-
-    //   if (notesBySearch.length === 0) {
-    //     console.log(`No notes found with title or content: ${noteId}`);
-    //     return null;
-    //   }
-
-    //   console.log(`Notes by Title or Content (${noteId}):`, notesBySearch);
-    //   return notesBySearch;
-    // }
-
-    // If noteId is a valid ObjectId, proceed with finding by ID
-    const note = await Note.findById(noteId);
-
-    if (!note) {
-      console.log(`No note found with ID: ${noteId}`);
-      return null;
-    }
-
-    console.log("Note by ID:", note);
-    return note;
+    const allNotes = await Note.find({ user: id });
+    console.log("All Notes:", allNotes);
+    return allNotes;
   } catch (error) {
-    console.error("Error fetching note by ID:", error);
+    console.error("Error fetching notes:", error);
   }
 };
+
+// const displayNoteById = async (noteId) => {
+//   try {
+//     // Check if noteId is a valid ObjectId
+//     // if (!mongoose.Types.ObjectId.isValid(noteId)) {
+//     //   // Treat it as a search query instead
+//     //   const notesBySearch = await Note.find({
+//     //     $or: [{ title: noteId }, { content: noteId }],
+//     //   });
+
+//     //   if (notesBySearch.length === 0) {
+//     //     console.log(`No notes found with title or content: ${noteId}`);
+//     //     return null;
+//     //   }
+
+//     //   console.log(`Notes by Title or Content (${noteId}):`, notesBySearch);
+//     //   return notesBySearch;
+//     // }
+
+//     // If noteId is a valid ObjectId, proceed with finding by ID
+//     const note = await Note.findById(noteId);
+
+//     if (!note) {
+//       console.log(`No note found with ID: ${noteId}`);
+//       return null;
+//     }
+
+//     console.log("Note by ID:", note);
+//     return note;
+//   } catch (error) {
+//     console.error("Error fetching note by ID:", error);
+//   }
+// };
 
 const displayNotesByTag = async (tag) => {
   try {
