@@ -33,7 +33,7 @@ router.get(
       });
 
       await newUser.save();
-      res.redirect(`${process.env.HOMEPAGE_URL}`);
+      res.redirect(`${process.env.HOMEPAGE_URL}/${req.user.id}`);
     } catch (error) {
       console.error("Error creating or retrieving user:", error);
       res.redirect(`${process.env.LOGIN_URL}`);
