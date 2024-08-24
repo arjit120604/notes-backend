@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const UserModel = require("../../models/User");
 const passport = require("passport");
-require("dotenv").config;
+require("dotenv").config();
 
 router.get(
   "/",
@@ -14,7 +14,7 @@ router.get(
 router.get(
   "/callback",
   passport.authenticate("google", {
-    failureRedirect: `${process.env.LOGIN_URL}`,
+    failureRedirect: `/`,
   }),
   async (req, res) => {
     try {
@@ -22,7 +22,8 @@ router.get(
 
       if (existingUser) {
         console.log(req.user);
-        return res.redirect(`${process.env.HOMEPAGE_URL}/${req.user.id}`);
+        // console.log(req.isAuthenticated());
+        return res.redirect(`/home/${req.user.id}`);
       }
 
       //   console.log(req.user.displayName);
@@ -33,10 +34,10 @@ router.get(
       });
 
       await newUser.save();
-      res.redirect(`${process.env.HOMEPAGE_URL}/${req.user.id}`);
+      res.redirect(`/home/${req.user.id}`);
     } catch (error) {
       console.error("Error creating or retrieving user:", error);
-      res.redirect(`${process.env.LOGIN_URL}`);
+      res.redirect(`/`);
     }
   }
 );

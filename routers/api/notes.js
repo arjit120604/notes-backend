@@ -5,11 +5,10 @@ const uuid = require("uuid");
 const morgan = require("morgan");
 const winston = require("winston");
 require("winston-mongodb");
-const fs = require("fs");
-const path = require("path");
 const jwt = require("jsonwebtoken");
 const UserModel = require("../../models/User");
 const jwt_decode = require("jwt-decode");
+const googleAuth = require('../../middleware/googleAuth')
 
 require("dotenv").config();
 
@@ -79,7 +78,9 @@ router.get("/", async (req, res) => {
 // });
 
 // GET note via id
-router.get("/:id", async (req, res) => {
+router.get("/:id",googleAuth,  async (req, res) => {
+  console.log(req.user);
+  console.log(req?.isAuthenticated())
   const found = await notes.displayNoteById(req.params.id);
   if (found) {
     res.json(found);
@@ -157,7 +158,7 @@ router.post("/", async (req, res) => {
 });
 
 // add request for google
-router.post("/:id", async (req, res) => {
+router.post("/:id", googleAuth, async (req, res) => {
   const id = req.params.id;
 
   const user = await UserModel.findOne({ googleId: id });
@@ -240,7 +241,7 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-router.delete("/:googleId/:id", async (req, res) => {
+router.delete("/:googleId/:id",googleAuth, async (req, res) => {
   try {
     const usernam = req.params.googleId;
 
@@ -339,7 +340,7 @@ router.put("/:id", async (req, res) => {
 });
 
 //put for google
-router.put("/:googleId/:id", async (req, res) => {
+router.put("/:googleId/:id", googleAuth, async (req, res) => {
   const noteId = req.params.id;
   const updatedNoteData = req.body;
 

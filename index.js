@@ -22,6 +22,22 @@ app.use(
   })
 );
 
+app.use(express.static(path.join(__dirname+"/build")));
+
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + "/build/index.html" );
+})
+app.get('/home/:id', (req, res) => {
+  res.sendFile(__dirname + "/build/index.html" );
+})
+// app.get('*', (req, res) => {
+//   res.sendFile(__dirname + "/build/index.html");
+// });
+// app.get('*', (req, res) => {
+//   res.sendFile(path.join(__dirname, 'build', 'index.html'));
+// });
+app.use(passport.initialize());
+app.use(passport.session());
 passport.use(
   new GoogleStrategy(
     {
@@ -43,12 +59,11 @@ passport.deserializeUser((user, done) => {
   done(null, user);
 });
 
-app.use(passport.initialize());
-app.use(passport.session());
 
 app.use("/api/notes", require("./routers/api/notes"));
 app.use("/auth", userRouter);
 app.use("/auth/google", require("./routers/api/google"));
+app.use("/api/logout", require("./routers/api/logout"));
 
 const dbUrl = process.env.MONGODB_URL;
 
